@@ -118,15 +118,14 @@ def fetch_latest_features():
                 print(f"❌ {name}: {str(e)[:50]}")
                 return None
         
-        # Fetch gold data - Use GLD ETF which is more reliable for current price
-        # GLD typically trades at about 1/7.17 of gold spot price per troy ounce
-        # (As of Nov 2025: GLD ~$370 ≈ Gold ~$2,650/oz)
+        # Fetch gold data - Use accurate gold futures or spot price
+        # As of Nov 2025: Gold is trading above $4,000/oz
         gold = None
         gold_price_multiplier = 1.0
         
         gold_tickers = [
-            ('GLD', 'Gold ETF (SPDR)', 7.17),  # GLD ~$370 = ~$2,650/oz
-            ('GC=F', 'Gold Futures', 1.0),     # Direct futures price (may be different month)
+            ('GC=F', 'Gold Futures', 1.0),     # Direct futures price (most accurate for spot)
+            ('GLD', 'Gold ETF (SPDR)', 10.9),  # GLD typically ~1/10th of gold price
         ]
         
         for ticker, name, multiplier in gold_tickers:
@@ -245,7 +244,7 @@ def fetch_latest_features():
         else:
             features['Gold_Oil_Ratio'] = 30
         
-        print(f"✅ Current Gold Price: ${features['Gold_Close']:.2f}")
+        print(f"✅ Current Gold Price: ${features['Gold_Close']:.2f} per troy ounce")
         print(f"📈 Features extracted: {len(features)}")
         
         return features
@@ -425,7 +424,9 @@ def api_predict():
         result = {
             'success': True,
             'timestamp': datetime.now().isoformat(),
-            'current_price': features.get('Gold_Close', 0)
+            'current_price': features.get('Gold_Close', 0),
+            'unit': 'USD per troy ounce',
+            'currency': 'USD'
         }
         
         # Predict based on type

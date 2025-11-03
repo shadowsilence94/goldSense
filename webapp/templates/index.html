@@ -172,6 +172,7 @@
             <div class="card">
                 <h2>Current Gold Price</h2>
                 <div id="current-price" class="price-display">$2,650.50</div>
+                <div id="price-unit" style="text-align: center; color: #7f8c8d; font-size: 1.1em; font-weight: 500; margin-top: -10px;">per troy ounce (USD)</div>
                 <div id="last-updated" style="text-align: center; color: #7f8c8d;">Last updated: --</div>
             </div>
 
@@ -271,6 +272,12 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Update current price display
+                if (data.current_price) {
+                    document.getElementById('current-price').textContent = '$' + data.current_price.toFixed(2);
+                    document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+                }
+                
                 if (data.success) {
                     if (type === 'day') {
                         resultTitle.textContent = "Tomorrow's Prediction";
@@ -278,7 +285,7 @@
                             <div class="metrics-grid">
                                 <div class="metric-box">
                                     <div class="metric-label">Predicted Price</div>
-                                    <div class="metric-value">$${data.prediction.next_day.toFixed(2)}</div>
+                                    <div class="metric-value">$${data.prediction.next_day.toFixed(2)}/oz</div>
                                 </div>
                                 <div class="metric-box">
                                     <div class="metric-label">Change</div>
@@ -293,6 +300,9 @@
                                     </div>
                                 </div>
                             </div>
+                            <div style="text-align: center; color: #7f8c8d; margin-top: 15px; font-size: 0.9em;">
+                                Unit: ${data.unit || 'USD per troy ounce'}
+                            </div>
                         `;
                     } else {
                         resultTitle.textContent = type === 'week' ? "Next Week Forecast" : "Next Month Forecast";
@@ -300,16 +310,19 @@
                             <div class="metrics-grid">
                                 <div class="metric-box">
                                     <div class="metric-label">Minimum</div>
-                                    <div class="metric-value">$${data.prediction.min.toFixed(2)}</div>
+                                    <div class="metric-value">$${data.prediction.min.toFixed(2)}/oz</div>
                                 </div>
                                 <div class="metric-box">
                                     <div class="metric-label">Average</div>
-                                    <div class="metric-value">$${data.prediction.avg.toFixed(2)}</div>
+                                    <div class="metric-value">$${data.prediction.avg.toFixed(2)}/oz</div>
                                 </div>
                                 <div class="metric-box">
                                     <div class="metric-label">Maximum</div>
-                                    <div class="metric-value">$${data.prediction.max.toFixed(2)}</div>
+                                    <div class="metric-value">$${data.prediction.max.toFixed(2)}/oz</div>
                                 </div>
+                            </div>
+                            <div style="text-align: center; color: #7f8c8d; margin-top: 15px; font-size: 0.9em;">
+                                Unit: ${data.unit || 'USD per troy ounce'}
                             </div>
                         `;
                     }
