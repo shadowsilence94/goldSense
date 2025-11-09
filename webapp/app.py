@@ -19,25 +19,37 @@ import seaborn as sns
 from io import BytesIO
 import base64
 
-app = Flask(__name__)
+# Get the directory where this file is located
+WEBAPP_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Model paths - check multiple locations
+# Create Flask app with explicit paths
+app = Flask(__name__,
+            template_folder=os.path.join(WEBAPP_DIR, 'templates'),
+            static_folder=os.path.join(WEBAPP_DIR, 'static'))
+
+# Model paths - use absolute path relative to this file
 def get_models_dir():
     """Get the correct models directory path"""
+    # First try the models directory in the same folder as this file
+    webapp_models = os.path.join(WEBAPP_DIR, 'models')
+    if os.path.exists(webapp_models) and os.path.isdir(webapp_models):
+        if any(f.endswith(('.pkl', '.h5')) for f in os.listdir(webapp_models)):
+            return webapp_models
+    
+    # Try other possible locations
     possible_paths = [
         'models',  # When running from webapp/
         '../models',  # When running from project root
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')  # Absolute from this file
+        os.path.join(os.path.dirname(WEBAPP_DIR), 'models')  # Parent directory
     ]
     
     for path in possible_paths:
         if os.path.exists(path) and os.path.isdir(path):
-            # Check if it actually has model files
             if any(f.endswith(('.pkl', '.h5')) for f in os.listdir(path)):
                 return path
     
-    # Default to models in current directory
-    return 'models'
+    # Default to models in webapp directory
+    return webapp_models
 
 MODEL_DIR = get_models_dir()
 SCALER_X_PATH = os.path.join(MODEL_DIR, 'scaler_X.pkl')
