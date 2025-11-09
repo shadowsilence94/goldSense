@@ -21,12 +21,29 @@ import base64
 
 app = Flask(__name__)
 
-# Model paths
-MODEL_DIR = 'models'
-SCALER_X_PATH = 'models/scaler_X.pkl'
-SCALER_Y_PATH = 'models/scaler_y.pkl'
-FEATURE_NAMES_PATH = 'models/feature_names.pkl'
-METADATA_PATH = 'models/metadata.pkl'
+# Model paths - check multiple locations
+def get_models_dir():
+    """Get the correct models directory path"""
+    possible_paths = [
+        'models',  # When running from webapp/
+        '../models',  # When running from project root
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models')  # Absolute from this file
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path) and os.path.isdir(path):
+            # Check if it actually has model files
+            if any(f.endswith(('.pkl', '.h5')) for f in os.listdir(path)):
+                return path
+    
+    # Default to models in current directory
+    return 'models'
+
+MODEL_DIR = get_models_dir()
+SCALER_X_PATH = os.path.join(MODEL_DIR, 'scaler_X.pkl')
+SCALER_Y_PATH = os.path.join(MODEL_DIR, 'scaler_y.pkl')
+FEATURE_NAMES_PATH = os.path.join(MODEL_DIR, 'feature_names.pkl')
+METADATA_PATH = os.path.join(MODEL_DIR, 'metadata.pkl')
 
 # Global variables
 model = None
@@ -40,6 +57,8 @@ def load_models():
     global model, scaler_X, scaler_y, feature_names, metadata
     
     try:
+        print(f"📂 Models directory: {MODEL_DIR}")
+        
         # Load scalers and feature names first
         scaler_X = joblib.load(SCALER_X_PATH)
         scaler_y = joblib.load(SCALER_Y_PATH)
@@ -50,10 +69,11 @@ def load_models():
         model_loaded = False
         
         # Try loading Keras model (.h5)
-        if os.path.exists(f'{MODEL_DIR}/best_model.h5'):
+        h5_path = os.path.join(MODEL_DIR, 'best_model.h5')
+        if os.path.exists(h5_path):
             try:
                 from tensorflow import keras
-                model = keras.models.load_model(f'{MODEL_DIR}/best_model.h5')
+                model = keras.models.load_model(h5_path)
                 print("✅ Loaded Keras model (best_model.h5)")
                 model_loaded = True
             except Exception as e:
@@ -62,13 +82,15 @@ def load_models():
         # Try loading pickle model
         if not model_loaded:
             for model_file in ['best_model.pkl', 'best_model_metadata.pkl']:
-                try:
-                    model = joblib.load(f'{MODEL_DIR}/{model_file}')
-                    print(f"✅ Loaded pickle model ({model_file})")
-                    model_loaded = True
-                    break
-                except Exception as e:
-                    continue
+                model_path = os.path.join(MODEL_DIR, model_file)
+                if os.path.exists(model_path):
+                    try:
+                        model = joblib.load(model_path)
+                        print(f"✅ Loaded pickle model ({model_file})")
+                        model_loaded = True
+                        break
+                    except Exception as e:
+                        continue
         
         if not model_loaded:
             print("❌ No model file found!")
@@ -638,12 +660,24 @@ def metrics_table():
 def available_plots():
     """List available result plots"""
     try:
-        results_dir = '../results'
-        if not os.path.exists(results_dir):
+        # Try multiple possible locations for results
+        possible_dirs = [
+            '../results',
+            'results',
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
+        ]
+        
+        results_dir = None
+        for dir_path in possible_dirs:
+            if os.path.exists(dir_path) and os.path.isdir(dir_path):
+                results_dir = dir_path
+                break
+        
+        if results_dir is None:
             return jsonify({
                 'success': False,
                 'plots': [],
-                'message': 'Results directory not found. Run the notebook first.'
+                'message': 'Results directory not found. Run the notebook first to generate visualizations.'
             })
         
         # List PNG files in results directory
@@ -652,15 +686,23 @@ def available_plots():
             if file.endswith('.png'):
                 plots.append({
                     'name': file.replace('_', ' ').replace('.png', '').title(),
-                    'filename': file
+                    'filename': file,
+                    'path': os.path.join(results_dir, file)
                 })
+        
+        # Sort by filename for consistency
+        plots.sort(key=lambda x: x['filename'])
+        
+        print(f"✅ Found {len(plots)} visualizations in {results_dir}")
         
         return jsonify({
             'success': True,
-            'plots': plots
+            'plots': plots,
+            'count': len(plots)
         })
         
     except Exception as e:
+        print(f"Error listing plots: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -670,15 +712,30 @@ def available_plots():
 def serve_plot(filename):
     """Serve a plot from results directory"""
     try:
-        results_dir = '../results'
-        file_path = os.path.join(results_dir, filename)
+        # Security: prevent directory traversal
+        filename = os.path.basename(filename)
         
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'Plot not found'}), 404
+        # Try multiple possible locations
+        possible_dirs = [
+            '../results',
+            'results',
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
+        ]
+        
+        file_path = None
+        for dir_path in possible_dirs:
+            test_path = os.path.join(dir_path, filename)
+            if os.path.exists(test_path):
+                file_path = test_path
+                break
+        
+        if file_path is None or not os.path.exists(file_path):
+            return jsonify({'error': f'Plot not found: {filename}'}), 404
         
         return send_file(file_path, mimetype='image/png')
         
     except Exception as e:
+        print(f"Error serving plot {filename}: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

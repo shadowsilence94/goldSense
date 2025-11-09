@@ -22,25 +22,30 @@ build/
 *.swo
 .DS_Store
 
-# Model files - uncomment to exclude large models
+# Model files - KEEP small models for deployment
+# Large models (>100MB) should use Git LFS or be excluded
 # *.h5
-# *.pkl
+# models/*.pkl
 
-# Data files - keep essential data, exclude large files
+# Data files - keep essential training data
 # *.csv
 
-# Exclude specific large/unnecessary files
+# Exclude specific large/unnecessary files  
 *_colab*.ipynb
 *_BACKUP*.ipynb
 *_CLEAN*.ipynb
-*.png
-results/
-enhanced_correlation_heatmap.png
-enhanced_time_series_all.png
-feature_importance_enhanced.png
-lstm_training_history.png
-model comparison.png
-prediction_vs_actual.png
+
+# IMPORTANT: Keep visualizations and models for deployment
+# Allow PNG files in results/ and root
+!results/*.png
+!*.png
+!webapp/static/*.png
+
+# Keep models directory contents
+!models/
+!models/*.pkl
+!models/*.h5
+!models/*.json
 
 # Documentation - exclude redundant docs but keep important ones
 CLEANUP_*.md

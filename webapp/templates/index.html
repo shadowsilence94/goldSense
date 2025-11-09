@@ -208,13 +208,6 @@
             </div>
 
             <div class="card">
-                <h2>Performance Comparison</h2>
-                <div id="comparison-plot" class="plot-container">
-                    <div class="loading"><div class="spinner"></div><p>Generating comparison chart...</p></div>
-                </div>
-            </div>
-
-            <div class="card">
                 <h2>Detailed Metrics Table</h2>
                 <div id="metrics-table" class="plot-container">
                     <div class="loading"><div class="spinner"></div><p>Loading metrics table...</p></div>
@@ -340,6 +333,7 @@
         }
 
         function loadPerformanceMetrics() {
+            // Load basic metrics
             fetch('/api/metrics')
                 .then(response => response.json())
                 .then(data => {
@@ -363,29 +357,34 @@
                         html += '</div>';
                         
                         document.getElementById('metrics-content').innerHTML = html;
+                    } else {
+                        document.getElementById('metrics-loading').innerHTML = 
+                            '<div class="alert alert-error">No model metrics available. Please train models first.</div>';
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error loading metrics:', error);
+                    document.getElementById('metrics-loading').innerHTML = 
+                        '<div class="alert alert-error">Error loading metrics. Ensure models are trained.</div>';
+                });
             
-            fetch('/api/plot/comparison')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('comparison-plot').innerHTML = 
-                            `<img src="data:image/png;base64,${data.plot}" alt="Model Comparison">`;
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            
+            // Load metrics table
             fetch('/api/plot/metrics_table')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
+                    if (data.success && data.plot) {
                         document.getElementById('metrics-table').innerHTML = 
-                            `<img src="data:image/png;base64,${data.plot}" alt="Metrics Table">`;
+                            `<img src="data:image/png;base64,${data.plot}" alt="Metrics Table" style="max-width: 100%; height: auto;">`;
+                    } else {
+                        document.getElementById('metrics-table').innerHTML = 
+                            '<div class="alert alert-error">Detailed metrics table not available.</div>';
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error loading metrics table:', error);
+                    document.getElementById('metrics-table').innerHTML = 
+                        '<div class="alert alert-error">Error generating metrics table.</div>';
+                });
         }
 
         function loadVisualizations() {
@@ -395,28 +394,47 @@
                     const gallery = document.getElementById('plots-gallery');
                     
                     if (data.success && data.plots.length > 0) {
-                        let html = '';
-                        data.plots.forEach(plot => {
-                            html += `
-                                <div class="plot-item" onclick="window.open('/api/plot/${plot.filename}', '_blank')">
-                                    <img src="/api/plot/${plot.filename}" alt="${plot.name}">
-                                    <div class="plot-title">${plot.name}</div>
+                        // Filter out problematic visualizations
+                        const excludeFiles = ['CorrelationHeatmap.png', 'DailyClosePrice.png'];
+                        const filteredPlots = data.plots.filter(plot => !excludeFiles.includes(plot.filename));
+                        
+                        if (filteredPlots.length > 0) {
+                            let html = '';
+                            filteredPlots.forEach(plot => {
+                                // URL encode the filename to handle spaces and special characters
+                                const encodedFilename = encodeURIComponent(plot.filename);
+                                html += `
+                                    <div class="plot-item" onclick="window.open('/api/plot/${encodedFilename}', '_blank')">
+                                        <img src="/api/plot/${encodedFilename}" 
+                                             alt="${plot.name}" 
+                                             loading="lazy"
+                                             onerror="this.style.display='none'">
+                                        <div class="plot-title">${plot.name}</div>
+                                    </div>
+                                `;
+                            });
+                            gallery.innerHTML = html;
+                        } else {
+                            gallery.innerHTML = `
+                                <div class="alert alert-error">
+                                    <p><strong>No visualizations available.</strong></p>
+                                    <p>Please run the training notebook to generate visualizations.</p>
                                 </div>
                             `;
-                        });
-                        gallery.innerHTML = html;
+                        }
                     } else {
                         gallery.innerHTML = `
                             <div class="alert alert-error">
                                 <p><strong>No visualizations found.</strong></p>
-                                <p>Please run ML_Project_CLEAN.ipynb notebook to generate plots.</p>
+                                <p>Please run the training notebook to generate visualizations.</p>
                             </div>
                         `;
                     }
                 })
                 .catch(error => {
+                    console.error('Error loading visualizations:', error);
                     document.getElementById('plots-gallery').innerHTML = 
-                        `<div class="alert alert-error">Error: ${error.message}</div>`;
+                        `<div class="alert alert-error">Error loading visualizations: ${error.message}</div>`;
                 });
         }
     </script>

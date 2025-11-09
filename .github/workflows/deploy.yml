@@ -1,10 +1,11 @@
-name: Deploy to Azure
+name: Deploy to DigitalOcean
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   test:
@@ -12,6 +13,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        lfs: true  # Pull LFS files if using Git LFS for models
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,30 +26,98 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Run tests
+    - name: Check project structure
+      run: |
+        echo "Checking project structure..."
+        ls -lh models/ || echo "Warning: No models directory"
+        ls -lh results/ || echo "Warning: No results directory"
+        ls -lh webapp/ || echo "Error: No webapp directory"
+    
+    - name: Verify webapp
       run: |
         cd webapp
-        python -m pytest tests/ -v || echo "Tests not configured yet"
+        python -c "import app; print('✅ Webapp imports successfully')"
+    
+    - name: Run tests (if available)
+      run: |
+        cd webapp
+        python -m pytest tests/ -v || echo "⚠️ Tests not configured yet"
 
-  build:
+  # Deploy to DigitalOcean App Platform
+  deploy-do-app-platform:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # Only runs if DO secrets are configured
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: true
+    
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    
+    - name: Trigger App Platform deployment
+      if: env.DIGITALOCEAN_ACCESS_TOKEN != '' && env.DO_APP_ID != ''
+      env:
+        DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+        DO_APP_ID: ${{ secrets.DO_APP_ID }}
+      run: |
+        echo "Triggering deployment for app: $DO_APP_ID"
+        doctl apps create-deployment $DO_APP_ID --wait
+        echo "✅ Deployment triggered successfully"
+    
+    - name: Deployment skipped
+      if: env.DIGITALOCEAN_ACCESS_TOKEN == '' || env.DO_APP_ID == ''
+      run: |
+        echo "⚠️ Deployment skipped - secrets not configured"
+        echo "To enable automatic deployments:"
+        echo "1. Get DigitalOcean API token from: cloud.digitalocean.com/account/api"
+        echo "2. Get App ID from your app's URL or settings"
+        echo "3. Add secrets to GitHub: Settings → Secrets → Actions"
+        echo "   - DIGITALOCEAN_ACCESS_TOKEN"
+        echo "   - DO_APP_ID"
+
+  # Build Docker image (for Droplet deployment)
+  build-docker:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        lfs: true
     
     - name: Build Docker image
       run: |
-        docker build -t goldsense:${{ github.sha }} .
+        docker build -t gold-price-prediction:${{ github.sha }} .
+        docker tag gold-price-prediction:${{ github.sha }} gold-price-prediction:latest
+        echo "✅ Docker image built successfully"
     
-    - name: Login to Azure Container Registry
-      if: env.AZURE_CR_NAME != ''
-      env:
-        AZURE_CR_NAME: ${{ secrets.AZURE_CR_NAME }}
-        AZURE_CR_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
-        AZURE_CR_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
+    - name: Save Docker image as artifact
       run: |
-        echo $AZURE_CR_PASSWORD | docker login $AZURE_CR_NAME.azurecr.io -u $AZURE_CR_USERNAME --password-stdin
-        docker tag goldsense:${{ github.sha }} $AZURE_CR_NAME.azurecr.io/goldsense:latest
-        docker push $AZURE_CR_NAME.azurecr.io/goldsense:latest
+        docker save gold-price-prediction:latest | gzip > docker-image.tar.gz
+    
+    - name: Upload Docker image
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-image-${{ github.sha }}
+        path: docker-image.tar.gz
+        retention-days: 7
+    
+    - name: Deployment instructions
+      run: |
+        echo "Docker image built and saved as artifact"
+        echo ""
+        echo "To deploy to a DigitalOcean Droplet:"
+        echo "1. Download the artifact from this workflow run"
+        echo "2. SSH into your droplet"
+        echo "3. Run:"
+        echo "   docker load < docker-image.tar.gz"
+        echo "   docker stop gold-app || true"
+        echo "   docker rm gold-app || true"
+        echo "   docker run -d -p 80:5001 --name gold-app --restart unless-stopped gold-price-prediction:latest"
