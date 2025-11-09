@@ -753,24 +753,25 @@ def available_plots():
             'prediction_vs_actual.png': 'Prediction vs Actual - How well the ensemble model predicts actual gold prices',
             'enhanced_time_series_all.png': 'Time Series Analysis - Historical gold price trends with technical indicators',
             'enhanced_correlation_heatmap.png': 'Enhanced Feature Correlation - Detailed correlation matrix of all features',
-            'correlation_heatmap.png': 'Feature Correlation Heatmap - Shows relationships between features',
             'feature_importance_enhanced.png': 'Feature Importance - Most influential features for price prediction',
             'lstm_training_history.png': 'LSTM Training History - Training and validation loss over epochs',
             'data_overview.png': 'Data Overview - Statistical summary of the dataset',
-            'time_series_analysis.png': 'Time Series Decomposition - Trend, seasonal, and residual components',
-            'DailyClosePrice.png': 'Daily Close Price - Historical daily closing prices'
+            'time_series_analysis.png': 'Time Series Decomposition - Trend, seasonal, and residual components'
         }
+        
+        # Files to exclude
+        exclude_files = ['correlation_heatmap (1).png', 'model_comparison (1).png']
         
         # List PNG files in visual directory
         plots = []
         for file in os.listdir(visual_dir):
-            if file.endswith('.png'):
+            if file.endswith('.png') and file not in exclude_files:
                 # Get description or create default one
                 description = plot_descriptions.get(file, 
-                    file.replace('_', ' ').replace('.png', '').replace('(1)', '').strip().title())
+                    file.replace('_', ' ').replace('.png', '').strip().title())
                 
                 plots.append({
-                    'name': file.replace('_', ' ').replace('.png', '').replace('(1)', '').strip().title(),
+                    'name': file.replace('_', ' ').replace('.png', '').strip().title(),
                     'filename': file,
                     'description': description,
                     'path': os.path.join(visual_dir, file)
