@@ -501,12 +501,29 @@ def api_predict():
 
 @app.route('/health')
 def health_check():
-    """Health check endpoint for AWS"""
+    """Health check endpoint for deployment monitoring"""
     models_loaded = model is not None and scaler_X is not None
     return jsonify({
         'status': 'healthy' if models_loaded else 'unhealthy',
         'models_loaded': models_loaded,
         'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/debug')
+def debug_info():
+    """Debug endpoint to check configuration"""
+    import sys
+    return jsonify({
+        'status': 'running',
+        'python_version': sys.version,
+        'flask_app_name': app.name,
+        'root_path': app.root_path,
+        'template_folder': app.template_folder,
+        'static_folder': app.static_folder,
+        'templates_exist': os.path.exists(app.template_folder),
+        'static_exists': os.path.exists(app.static_folder),
+        'routes': [str(rule) for rule in app.url_map.iter_rules()],
+        'cwd': os.getcwd()
     })
 
 @app.route('/api/metrics')
