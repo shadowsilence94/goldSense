@@ -716,84 +716,94 @@ def metrics_table():
 
 @app.route('/api/available_plots')
 def available_plots():
-    """List available result plots"""
+    """List available result plots - generate dynamically if needed"""
     try:
-        # Try multiple possible locations for results
-        possible_dirs = [
-            '../results',
-            'results',
-            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
-        ]
-        
-        results_dir = None
-        for dir_path in possible_dirs:
-            if os.path.exists(dir_path) and os.path.isdir(dir_path):
-                results_dir = dir_path
-                break
-        
-        if results_dir is None:
+        # Check if we have model metadata with metrics
+        if metadata and 'metrics' in metadata and metadata['metrics']:
+            # We can generate plots from metadata
+            plots = [
+                {
+                    'name': 'Model Performance Metrics',
+                    'filename': 'metrics_comparison',
+                    'dynamic': True
+                }
+            ]
+            
+            return jsonify({
+                'success': True,
+                'plots': plots,
+                'count': len(plots),
+                'message': 'Generating visualizations from model data'
+            })
+        else:
             return jsonify({
                 'success': False,
                 'plots': [],
-                'message': 'Results directory not found. Run the notebook first to generate visualizations.'
+                'message': 'No visualization data available. Models are loaded but no training metrics found. Run the training notebooks to generate detailed visualizations.'
             })
-        
-        # List PNG files in results directory
-        plots = []
-        for file in os.listdir(results_dir):
-            if file.endswith('.png'):
-                plots.append({
-                    'name': file.replace('_', ' ').replace('.png', '').title(),
-                    'filename': file,
-                    'path': os.path.join(results_dir, file)
-                })
-        
-        # Sort by filename for consistency
-        plots.sort(key=lambda x: x['filename'])
-        
-        print(f"✅ Found {len(plots)} visualizations in {results_dir}")
-        
-        return jsonify({
-            'success': True,
-            'plots': plots,
-            'count': len(plots)
-        })
         
     except Exception as e:
         print(f"Error listing plots: {e}")
+        traceback.print_exc()
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'plots': [],
+            'message': 'Error loading visualizations'
         }), 500
 
 @app.route('/api/plot/<filename>')
 def serve_plot(filename):
-    """Serve a plot from results directory"""
+    """Serve or generate plot dynamically"""
     try:
         # Security: prevent directory traversal
         filename = os.path.basename(filename)
         
-        # Try multiple possible locations
-        possible_dirs = [
-            '../results',
-            'results',
-            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'results')
-        ]
-        
-        file_path = None
-        for dir_path in possible_dirs:
-            test_path = os.path.join(dir_path, filename)
-            if os.path.exists(test_path):
-                file_path = test_path
-                break
-        
-        if file_path is None or not os.path.exists(file_path):
-            return jsonify({'error': f'Plot not found: {filename}'}), 404
-        
-        return send_file(file_path, mimetype='image/png')
+        # Generate plot dynamically if it's a special one
+        if filename == 'metrics_comparison' and metadata and 'metrics' in metadata:
+            # Generate metrics visualization
+            fig, ax = plt.subplots(figsize=(10, 6))
+            
+            metrics_data = metadata.get('metrics', {})
+            if metrics_data:
+                metrics_names = list(metrics_data.keys())
+                metrics_values = list(metrics_data.values())
+                
+                colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12']
+                bars = ax.bar(metrics_names, metrics_values, color=colors[:len(metrics_names)])
+                
+                ax.set_title('Model Performance Metrics', fontsize=16, fontweight='bold', pad=20)
+                ax.set_ylabel('Score', fontsize=12)
+                ax.set_ylim(0, 1.0)
+                ax.grid(axis='y', alpha=0.3)
+                
+                # Add value labels on bars
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{height:.4f}',
+                           ha='center', va='bottom', fontsize=10)
+                
+                plt.tight_layout()
+                
+                # Convert to base64
+                img_buffer = BytesIO()
+                plt.savefig(img_buffer, format='png', dpi=100, bbox_inches='tight')
+                img_buffer.seek(0)
+                plt.close()
+                
+                return send_file(img_buffer, mimetype='image/png')
+            else:
+                return jsonify({'error': 'No metrics data available'}), 404
+        else:
+            return jsonify({
+                'error': 'Visualization not available',
+                'message': 'Run the training notebooks to generate detailed visualizations'
+            }), 404
         
     except Exception as e:
         print(f"Error serving plot {filename}: {e}")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
