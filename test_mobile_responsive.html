@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Responsive Test - GoldSense</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .tab {
+            padding: 15px 30px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s;
+        }
+        .tab.active { background: #667eea; color: white; }
+        
+        /* Mobile Responsive */
+        @media screen and (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 20px; border-radius: 15px; }
+            .tabs {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                border-bottom: none;
+            }
+            .tab {
+                width: 100%;
+                padding: 12px 15px;
+                font-size: 15px;
+                border-radius: 10px;
+                text-align: left;
+            }
+            .tab.active {
+                border-left: 4px solid #764ba2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mobile Responsive Test</h1>
+        <p>Resize your browser window to test responsiveness</p>
+        <br>
+        <div class="tabs">
+            <button class="tab active">📊 Predictions</button>
+            <button class="tab">📈 Model Performance</button>
+            <button class="tab">🖼️ Visualizations</button>
+        </div>
+        <p><strong>✅ On Desktop:</strong> Tabs should be horizontal</p>
+        <p><strong>✅ On Mobile:</strong> Tabs should stack vertically</p>
+    </div>
+</body>
+</html>

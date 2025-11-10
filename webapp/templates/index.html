@@ -306,9 +306,9 @@
         <div id="predictions-tab" class="tab-content active">
             <div class="card">
                 <h2>Current Gold Price</h2>
-                <div id="current-price" class="price-display">$2,650.50</div>
-                <div id="price-unit" style="text-align: center; color: #7f8c8d; font-size: 1.1em; font-weight: 500; margin-top: -10px;">per troy ounce (USD)</div>
-                <div id="last-updated" style="text-align: center; color: #7f8c8d;">Last updated: --</div>
+                <div id="current-price" class="price-display" style="color: #95a5a6;">Click predict buttons below to get real-time price</div>
+                <div id="price-unit" style="text-align: center; color: #7f8c8d; font-size: 1.1em; font-weight: 500; margin-top: -10px; display: none;">per troy ounce (USD)</div>
+                <div id="last-updated" style="text-align: center; color: #7f8c8d; display: none;">Last updated: --</div>
             </div>
 
             <div class="card">
@@ -390,7 +390,7 @@
         }
 
         window.onload = function() {
-            document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+            // Don't show last updated on load, only after prediction
         };
 
         function getPrediction(type) {
@@ -413,6 +413,9 @@
                 // Update current price display
                 if (data.current_price) {
                     document.getElementById('current-price').textContent = '$' + data.current_price.toFixed(2);
+                    document.getElementById('current-price').style.color = '#f39c12';
+                    document.getElementById('price-unit').style.display = 'block';
+                    document.getElementById('last-updated').style.display = 'block';
                     document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
                 }
                 
