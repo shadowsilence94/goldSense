@@ -3,7 +3,6 @@ Gold Price Prediction Web Application
 Flask API for predicting gold prices using trained ML models
 With model performance visualization
 """
-import streamlit as st
 from flask import Flask, render_template, request, jsonify, send_file
 import numpy as np
 import pandas as pd
