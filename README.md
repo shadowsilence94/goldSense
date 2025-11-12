@@ -1,14 +1,14 @@
-# GoldSense - Gold Price Prediction 🏆
+# GoldSense - Gold Price Prediction
 
-🎯 Advanced Machine Learning Project - Real-time gold price prediction with multiple ML models and production-ready web interface
+Advanced Machine Learning Project - Real-time gold price prediction with multiple ML models and production-ready web interface
 
-## 🌟 Live Demo
+## Live Demo
 
 **Web App**: https://your-app.elasticbeanstalk.com (Deploy to AWS)  
 **Health Check**: `https://your-app/health`  
 **API Documentation**: See [API Usage](#-api-usage)
 
-## 📊 Project Overview
+## Project Overview
 
 This project implements state-of-the-art machine learning models to predict gold prices with high accuracy:
 - **XGBoost Regression** - Gradient boosting ensemble
@@ -19,26 +19,26 @@ This project implements state-of-the-art machine learning models to predict gold
 - **Ensemble Model** - Combines multiple models for best accuracy
 
 The trained models are deployed as a Flask web application that:
-- 🔄 Fetches real-time gold market data from Yahoo Finance
-- 📈 Provides next day/week/month price predictions
-- 📊 Shows comprehensive model performance metrics
-- 📉 Displays interactive visualizations of training results
-- 🎯 Achieves R² > 0.95 on validation data
+- Fetches real-time gold market data from Yahoo Finance
+- Provides next day/week/month price predictions
+- Shows comprehensive model performance metrics
+- Displays interactive visualizations of training results
+- Achieves R² > 0.95 on validation data
 
-## ✨ Key Features
+## Key Features
 
-- ✅ Real-time gold price predictions (daily, weekly, monthly)
-- ✅ Multi-model ensemble approach for accuracy
-- ✅ Model performance comparison dashboard
-- ✅ Training visualizations (correlation heatmaps, feature importance, predictions)
-- ✅ RESTful API for easy integration
-- ✅ Responsive web interface
-- ✅ Docker containerization for easy deployment
-- ✅ AWS deployment ready (Elastic Beanstalk, ECS, EC2)
-- ✅ CI/CD pipeline with GitHub Actions
-- ✅ Comprehensive error handling and logging
+- Real-time gold price predictions (daily, weekly, monthly)
+- Multi-model ensemble approach for accuracy
+- Model performance comparison dashboard
+- Training visualizations (correlation heatmaps, feature importance, predictions)
+- RESTful API for easy integration
+- Responsive web interface
+- Docker containerization for easy deployment
+- AWS deployment ready (Elastic Beanstalk, ECS, EC2)
+- CI/CD pipeline with GitHub Actions
+- Comprehensive error handling and logging
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -107,7 +107,7 @@ docker run -p 5001:5001 gold-price-prediction
 open http://localhost:5001
 ```
 
-## 🚢 Deployment to AWS
+## Deployment to AWS
 
 ### Quick Deploy to AWS Elastic Beanstalk
 
@@ -128,24 +128,24 @@ eb open
 ### Complete AWS Deployment Guide
 
 See **[AWS_DEPLOYMENT_GUIDE.md](AWS_DEPLOYMENT_GUIDE.md)** for comprehensive instructions including:
-- ✅ AWS Elastic Beanstalk deployment (recommended)
-- ✅ AWS ECS with Fargate deployment
-- ✅ AWS EC2 with Docker deployment
-- ✅ CI/CD setup with GitHub Actions
-- ✅ Cost estimation and optimization
-- ✅ Monitoring and troubleshooting
+- AWS Elastic Beanstalk deployment (recommended)
+- AWS ECS with Fargate deployment
+- AWS EC2 with Docker deployment
+- CI/CD setup with GitHub Actions
+- Cost estimation and optimization
+- Monitoring and troubleshooting
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ML_gold_preditct_project/
-├── 📓 Training Notebooks
+├── Training Notebooks
 │   ├── GoldSense_Train_Local.ipynb       # Local training (RECOMMENDED)
 │   ├── GoldSense_Train_Combined_colab.ipynb  # Google Colab version
 │   ├── ML_Project.ipynb                  # Original project notebook
 │   └── Data_Cleaning_Feature_Engineering.ipynb
 │
-├── 🌐 Web Application
+├── Web Application
 │   ├── webapp/
 │   │   ├── app.py                        # Flask application
 │   │   ├── templates/
@@ -155,7 +155,7 @@ ML_gold_preditct_project/
 │   │   └── requirements.txt             
 │   │   └── .ebextensions/               # AWS EB configuration
 │   │
-├── 🤖 Models & Data
+├── Models & Data
 │   ├── models/                           # Trained model files
 │   │   ├── best_model.pkl               # Primary model
 │   │   ├── scaler_X.pkl                 # Feature scaler
@@ -175,7 +175,7 @@ ML_gold_preditct_project/
 │   ├── XAGUSD_daily.csv                 # Silver historical data
 │   └── enhanced_gold_data_complete.csv  # Processed training data
 │
-├── 🚀 Deployment & CI/CD
+├── Deployment & CI/CD
 │   ├── .github/workflows/
 │   │   └── deploy.yml                   # GitHub Actions CI/CD
 │   ├── Dockerfile                        # Container configuration
@@ -184,18 +184,18 @@ ML_gold_preditct_project/
 │   ├── AWS_DEPLOYMENT_GUIDE.md          # AWS deployment guide
 │   └── .gitattributes                   # Git LFS configuration
 │
-├── 📚 Documentation
+├── Documentation
 │   ├── README.md                         # This file
 │   ├── DEPLOYMENT_GUIDE.md              # General deployment
 │   ├── QUICK_START_GUIDE.md             # Getting started
 │   └── requirements.txt                  # Python dependencies
 │
-└── 🔧 Configuration
+└── Configuration
     ├── .gitignore                        # Git ignore rules
     └── .env.example                      # Environment variables template
 ```
 
-## 🤖 API Usage
+## API Usage
 
 ### Health Check
 ```bash
@@ -271,7 +271,7 @@ GET /api/plot/comparison  # Model comparison chart
 GET /api/plot/metrics_table  # Performance metrics table
 ```
 
-## 📊 Model Performance
+## Model Performance
 
 The models achieve excellent performance on historical gold price data:
 
@@ -296,7 +296,7 @@ The models achieve excellent performance on historical gold price data:
 | LSTM | 0.90+ | 60-80 | 80-100 | 2-3% |
 | Ensemble | 0.96+ | 35-55 | 55-75 | 0.8-1.8% |
 
-## 🔧 Development & Training
+## Development & Training
 
 ### Training New Models
 
@@ -331,7 +331,7 @@ python update_data.py
 # Or let the webapp fetch automatically on each prediction
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Issue: Models Not Loading
 
@@ -446,7 +446,7 @@ git commit -m "Add trained models"
 git push
 ```
 
-## 🌐 Technologies Used
+## Technologies Used
 
 ### Backend
 - **Flask** - Web framework
@@ -472,7 +472,7 @@ git push
 - **AWS Elastic Beanstalk/ECS** - Cloud hosting
 - **GitHub Actions** - CI/CD pipeline
 
-## 📈 Future Enhancements
+## Future Enhancements
 
 - [ ] Real-time WebSocket updates for live prices
 - [ ] Add more economic indicators (inflation, interest rates, GDP)
@@ -485,11 +485,11 @@ git push
 - [ ] GraphQL API for flexible queries
 - [ ] A/B testing framework for model comparison
 
-## 📝 License
+## License
 
 Educational use only - University Machine Learning Project
 
-## 🤝 Contributing
+## Contributing
 
 This is a university assignment. For suggestions or issues, please open a GitHub issue.
 
@@ -499,7 +499,7 @@ This is a university assignment. For suggestions or issues, please open a GitHub
 GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)  
 Email: your.email@university.edu
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Yahoo Finance** for providing free market data API
 - **Scikit-learn** and **XGBoost** communities for excellent ML libraries
@@ -509,7 +509,7 @@ Email: your.email@university.edu
 
 ---
 
-## 📚 References
+## References
 
 1. Gold Market Analysis using Machine Learning
 2. Time Series Forecasting with Ensemble Methods
@@ -518,7 +518,7 @@ Email: your.email@university.edu
 
 ---
 
-**⭐ If this project helped you, please star the repository!**
+**If this project helped you, please star the repository!**
 
 **📧 Questions? Open an issue or contact me directly.**
 
