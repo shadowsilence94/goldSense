@@ -4,8 +4,8 @@ Advanced Machine Learning Project - Real-time gold price prediction with multipl
 
 ## Live Demo
 
-**Web App**: https://your-app.elasticbeanstalk.com (Deploy to AWS)  
-**Health Check**: `https://your-app/health`  
+**Web App**: [click here](https://goldfsenseait-kov5n.ondigitalocean.app/) (Deploy using Digital Ocean)
+**Health Check**: `https://URL/health`  
 **API Documentation**: See [API Usage](#-api-usage)
 
 ## Project Overview
